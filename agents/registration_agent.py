@@ -64,6 +64,17 @@ Only ask for one thing at a time.
     ref = f"DNE-{random.randint(1000,9999)}"
     state["reference_id"] = ref
 
+# SAVE TO DATABASE
+    save_registration({
+        "reference_id": ref,
+        "name": state["name"],
+        "phone": state["phone"],
+        "address": state["address"],
+        "support_type": state["support_type"]
+    })
+
+    
+
     final_prompt = f"""
 You are a welfare registration assistant.
 
@@ -93,3 +104,24 @@ Tell the user:
     state["response"] = final_response.content
 
     return state
+
+from database.db import SessionLocal
+from database.models import Registration
+
+
+def save_registration(data):
+
+    db = SessionLocal()
+
+    new_user = Registration(
+        reference_id=data["reference_id"],
+        name=data["name"],
+        phone=data["phone"],
+        address=data["address"],
+        support_type=data["support_type"],
+        status="PENDING"
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.close()
